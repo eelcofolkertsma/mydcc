@@ -1,2 +1,1 @@
-<<<<<<< HEAD
-Publication of python wallet  
+## Publication of python wallet  
