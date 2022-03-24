@@ -1,0 +1,451 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "egkMABlKNXSg"
+      },
+      "source": [
+        "## NL Wallet App Simulator\n",
+        "- Execute each cell with Crtl+Enter\n",
+        "- Two cells will ask for an input. Make sure the respective QR (init, DCC) is readily a hand for cut and paste\n",
+        "\n",
+        "\n",
+        "Install libraries if you run this notebook for the first time"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "NSmM4KBMNgCO"
+      },
+      "outputs": [],
+      "source": [
+        "!pip install pyjwt cryptography protobuf pycryptodome ecdsa\n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "ko6ytm4fNiX3"
+      },
+      "source": [
+        "### Ingest an invitation\n",
+        "\n",
+        "Identify yourself at an airline (e.g. https://pinggg.mywire.org/static-v2) to obtain an invitation for validation. \n",
+        "\n",
+        "Grab the invitation string from url to wallet and paste in input-box. <br>\n",
+        "Or alternative: Open QR-code in Google-lens and \"copy text\" to capture the invitation string.\n",
+        "\n",
+        "### Init QR code handling by wallet app\n",
+        "The wallet app processes the invitation:\n",
+        "\n",
+        "1.   The wallet gets airline identity document to learn airline endpoints and validation service location\n",
+        "2.   The wallet determines location of validation service ((from airline identity document)). A choice is presented in case multiple validation services are offered."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "iUwpsWDOM3fR",
+        "outputId": "db712e9f-4014-44bf-9812-0ff6414c7d43"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Paste Invitation string contents here: eyJwcm90b2NvbCI6IkRDQ1ZBTElEQVRJT04iLCJwcm90b2NvbFZlcnNpb24iOiIxLjQuMCIsInNlcnZpY2VJZGVudGl0eSI6Imh0dHBzOi8vcGluZ2dnLm15d2lyZS5vcmcvd2FsbGV0L2lkZW50aXR5L3YyIiwicHJpdmFjeVVybCI6Imh0dHBzOi8vc29tZS5pbnN0aXR1dGlvbi92YWxpZGF0aW9uL3ByaXZhY3kiLCJ0b2tlbiI6ImV5SmhiR2NpT2lKRlV6STFOaUlzSW5SNWNDSTZJa3BYVkNJc0ltdHBaQ0k2SWtGd1RYaHlZMGxJTURkVFZWWlRURVo0ZGs1cVVISjJNRTg1ZEVoUVdqaDZkRmszTURkQlIxRTJVM2NpZlEuZXlKcGMzTWlPaUpvZEhSd2N6b3ZMM0JwYm1kblp5NXRlWGRwY21VdWIzSm5MM2RoYkd4bGRDOXBaR1Z1ZEdsMGVTOTJNaUlzSW5OMVlpSTZJakl4TVdNeVlUa3pMVGcyWXpBdE5EZzVaQzFoWlRkakxUTTVZakZqTkdWa05qazJNQ0lzSW1saGRDSTZNVFkwTmpnME16STVOU3dpWlhod0lqb3hOalEyT0RRMk9EazFmUS52XzFpM3dCdnl3R1RHZEcwWUNBVE9YUVFUcVlybGluRkEyZHB3elhaOEVleDlkdmZFZFRYVGxEaEd0eUU5NFR2TW1LTkRvVTJRYTRVdjVsTVd4bGtZQSIsImNvbnNlbnQiOiJQbGVhc2UgY29uZmlybSB0byBzdGFydCB0aGUgRENDIEV4Y2hhbmdlIGZsb3cuIElmIHlvdSBub3QgY29uZmlybSwgdGhlIGZsb3cgaXMgYWJvcnRlZC4iLCJzdWJqZWN0IjoiMjExYzJhOTMtODZjMC00ODlkLWFlN2MtMzliMWM0ZWQ2OTYwIiwic2VydmljZVByb3ZpZGVyIjoiVHJ1c3QgbWUifQ==\n",
+            "QR-Code data: {\n",
+            "    \"protocol\": \"DCCVALIDATION\",\n",
+            "    \"protocolVersion\": \"1.4.0\",\n",
+            "    \"serviceIdentity\": \"https://pinggg.mywire.org/wallet/identity/v2\",\n",
+            "    \"privacyUrl\": \"https://some.institution/validation/privacy\",\n",
+            "    \"token\": \"eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IkFwTXhyY0lIMDdTVVZTTEZ4dk5qUHJ2ME85dEhQWjh6dFk3MDdBR1E2U3cifQ.eyJpc3MiOiJodHRwczovL3BpbmdnZy5teXdpcmUub3JnL3dhbGxldC9pZGVudGl0eS92MiIsInN1YiI6IjIxMWMyYTkzLTg2YzAtNDg5ZC1hZTdjLTM5YjFjNGVkNjk2MCIsImlhdCI6MTY0Njg0MzI5NSwiZXhwIjoxNjQ2ODQ2ODk1fQ.v_1i3wBvywGTGdG0YCATOXQQTqYrlinFA2dpwzXZ8Eex9dvfEdTXTlDhGtyE94TvMmKNDoU2Qa4Uv5lMWxlkYA\",\n",
+            "    \"consent\": \"Please confirm to start the DCC Exchange flow. If you not confirm, the flow is aborted.\",\n",
+            "    \"subject\": \"211c2a93-86c0-489d-ae7c-39b1c4ed6960\",\n",
+            "    \"serviceProvider\": \"Trust me\"\n",
+            "}\n",
+            "Invitation-token: {'iss': 'https://pinggg.mywire.org/wallet/identity/v2', 'sub': '211c2a93-86c0-489d-ae7c-39b1c4ed6960', 'iat': 1646843295, 'exp': 1646846895}\n",
+            "Validation ServiceID https://pinggg.mywire.org/wallet/identity/v2#ValidationService-1\n",
+            "https://pinggg.mywire.org/wallet/validation-stub/v2\n"
+          ]
+        }
+      ],
+      "source": [
+        "import requests\n",
+        "import json\n",
+        "import jwt\n",
+        "import base64\n",
+        "\n",
+        "invite = input('Paste Invitation string contents here: ')\n",
+        "\n",
+        "base64_message = invite\n",
+        "base64_bytes = base64_message.encode('ascii')\n",
+        "message_bytes = base64.b64decode(base64_bytes)\n",
+        "qr_code = message_bytes.decode('ascii')\n",
+        "\n",
+        "qr_code_data =  json.loads(qr_code)\n",
+        "print(f\"QR-Code data: {json.dumps(qr_code_data, indent=4)}\")\n",
+        "\n",
+        "token_info = jwt.decode(qr_code_data['token'], options={\"verify_signature\":False})\n",
+        "print(f\"Invitation-token: {token_info}\")\n",
+        "\n",
+        "import ecdsa\n",
+        "import base64\n",
+        "from Crypto.Hash import SHA256\n",
+        "from ecdsa.curves import NIST256p\n",
+        "\n",
+        "# Load the airline identity document \n",
+        "serviceIdentity = requests.get( qr_code_data['serviceIdentity'] ).json()\n",
+        "\n",
+        "# Get the information from the identity document. Identity contents\n",
+        "## services, i.e. airline endpoint to get validation access token and to return confirmation token, and (list of) providers that offer validation\n",
+        "## verification methods, public keys to validate signatures or for use in encryption \n",
+        "\n",
+        "validationlist=[];\n",
+        "for service in serviceIdentity['service']:\n",
+        "    \n",
+        "    # This should not always be 'ValidationService-1' but the current service\n",
+        "    # depending on rules and requirements\n",
+        "    if service['id'].find('#ValidationService')>0: \n",
+        "        validationlist.append(service);\n",
+        "        validation_service_id = service['id']        \n",
+        "        print(f\"Validation ServiceID {validation_service_id}\") \n",
+        "#print(validationlist)\n",
+        "if len(validationlist) == 1:\n",
+        "  choice = 0\n",
+        "else:\n",
+        "  choice = int(input('Please enter number of service you have chosen (1,2,3): ').strip())  # This picks up the validation service\n",
+        "  choice=choice-1\n",
+        "#Make record of validation service endpoint for future use\n",
+        "validation_service_id=validationlist[choice]['id']\n",
+        "validation_service_endpoint = validationlist[choice]['serviceEndpoint'] \n",
+        "print(\"Selected: \"+ validation_service_endpoint) \n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "#Wallet gets the validation access token\n",
+        "which packs travel data and some instructions for type of validation that is expected. \n",
+        "- The endpoint to get access token is determined from the airline identity document\n",
+        "- The request is authenticated with invitation-token (so links back to booking and passenger)\n",
+        "\n",
+        "Under EU-DCC-validation protocol (but not implemented by us)\n",
+        "- The wallet advises its one-time identity, not sure why??\n",
+        "- The airline hands back validation access token and a nonce (nonce, why??)"
+      ],
+      "metadata": {
+        "id": "1EeQebVSELRV"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "xA2K6n9mAb2I",
+        "outputId": "73bb1d8b-8cdc-4819-d445-e4f8029bc2f4"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Validator_Access_Token: {\n",
+            "    \"iss\": \"https://pinggg.mywire.org/wallet/identity/v2\",\n",
+            "    \"sub\": \"211c2a93-86c0-489d-ae7c-39b1c4ed6960\",\n",
+            "    \"aud\": \"https://pinggg.mywire.org/wallet/validation-stub/v2/validate\",\n",
+            "    \"t\": 2,\n",
+            "    \"v\": \"1.0\",\n",
+            "    \"vc\": {\n",
+            "        \"lang\": \"en-en\",\n",
+            "        \"coa\": \"NL\",\n",
+            "        \"cod\": \"BE\",\n",
+            "        \"poa\": \"AMS\",\n",
+            "        \"pod\": \"BRU\",\n",
+            "        \"roa\": \"NL\",\n",
+            "        \"rod\": \"BE\",\n",
+            "        \"type\": [\n",
+            "            \"r\",\n",
+            "            \"v\",\n",
+            "            \"t\"\n",
+            "        ],\n",
+            "        \"category\": [\n",
+            "            \"Standard\"\n",
+            "        ],\n",
+            "        \"validationClock\": \"2022-03-09T16:53:35.805Z\",\n",
+            "        \"validFrom\": \"2022-03-10T16:28:15.601Z\",\n",
+            "        \"validTo\": \"2022-03-10T17:28:15.601Z\"\n",
+            "    },\n",
+            "    \"jti\": \"d94cd0cb-a40d-4017-af0f-2168c311c742\",\n",
+            "    \"iat\": 1646844815,\n",
+            "    \"exp\": 1646848415\n",
+            "}\n"
+          ]
+        }
+      ],
+      "source": [
+        "import ecdsa\n",
+        "import base64\n",
+        "from Crypto.Hash import SHA256\n",
+        "from ecdsa.curves import NIST256p\n",
+        "\n",
+        "#create one-time wallet identity(key-pair) to sign the DCC on upload\n",
+        "userkey = ecdsa.SigningKey.generate(curve=NIST256p,hashfunc=SHA256.new) \n",
+        "\n",
+        "# App selects the AccessTokenService in Airline Identity document and requests for Validation Access token. \n",
+        "\n",
+        "for service in serviceIdentity['service']:\n",
+        "    if service['id'].endswith('#AccessTokenService-1'):\n",
+        "        response = requests.post( service['serviceEndpoint'], \n",
+        "                    headers={'Authorization': f'Bearer {qr_code_data[\"token\"]}', #initR-token goes here\n",
+        "                             'Content-Type':'application/json', \n",
+        "                             'X-Version' : '1.0'},\n",
+        "                    json = {\"pubKey\": userkey.get_verifying_key().to_pem().decode(), \n",
+        "                                    #advise pub key to validation service for inspection of signature on DCC\n",
+        "                            \"service\":validation_service_id}\n",
+        "                                     #advise chosen validation service\n",
+        "        )\n",
+        "        # print (\"Undecoded Response\", response.status_code, response.text, '\\n\\n')\n",
+        "        \n",
+        "        # This is the access token for the validation service\n",
+        "        validator_token = response.text \n",
+        "        validation_nonce = response.headers['x-nonce']\n",
+        "        \n",
+        "        token_info = jwt.decode(validator_token, options={\"verify_signature\":False})\n",
+        "        print(f\"Validator_Access_Token: {json.dumps(token_info, indent=4)}\")\n",
+        "\n",
+        "\n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "vCztNXDnNxP6"
+      },
+      "source": [
+        "# Submit the health certificate\n",
+        "You can enter the health certificate data into an input field. \n",
+        "\n",
+        "Source for DCC: https://eu-dcc-validation.web.app/\n",
+        "\n",
+        "Open the QR-code with Google lens (right click option in Chrome) and \"copy text\" to obtain health sertificate in string format \n",
+        "\n",
+        "Make sure that the name and date-of-birth match the data in the validation access token from above. \n",
+        "\n",
+        "##The wallet app now executes the following steps: \n",
+        "- choose a random password (32 bytes)\n",
+        "- AES-encrypt the DCC with the password from above and the nonce that was obtained together with the access token \n",
+        "- encrypt the password with the validation service's public key \n",
+        "- sign the encrypted AES-encrypted data with the userkey that has been submitted to get the access token\n",
+        "- send JSON data to the validation service:\n",
+        "   - kid of validation server's public key that was used to encrypt password\n",
+        "   - encrypted dcc data\n",
+        "   - signature of encrypted dcc data\n",
+        "   - PKI encrypted password for dcc\n",
+        "   - constants: encScheme = RSAOAEPWithSHA256AESCBC, sigAlg = SHA256withECDSA\n",
+        "   - header: Access token that was previously obtained\n",
+        "- decode the response and print it\n",
+        "  - Private part of result is feedback on evaluation of individual busness rules\n",
+        "  - Public part of result is confirmaion token, which can be made availabe to airline if passenger wishes to do so\n",
+        "\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "pZ4LITwAN0T3",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "8f251d92-12d8-4e9c-e30a-7e49c4e35418"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Please paste your HCert: HC1:6BFOXN%TSMAHN-HOO4M/MG7HG7HDX9:D43:O-36LOVAOMQV4TP5I9CQL9+9D*XD/GPWBILC9FF9 RPR-SPGA.N8E6KZ1WJ9OF00SI1V:4CP6C324RC2%K:XF03LP+POF4$0AQCQYCIW49W3GZS0N1B+4K77II*N/ME.ZJ1NGC QAT0PI0QQ9LV7U*V:+GWUSN*O0%KL$S8J4+J46YBAN8ORC4126NA6H0554-G97E9M9IDB9M%5N11NJPLEP9XA7KQSF6HX6BGUZ+L..P9PPTW5G0A+E93ZM$96PZ6+Q6X46%E5EPPQF67460R6646O59WC5OFU946+967KQ1C9AKPCPP7ZM-O6QW6:%0GIII7JSTNB957/5%77P1R6ZQZ.QR95.16 K5 96P/5CA7T5M7+5:ZJ83BO8TGVTCET6NJF0JEYI1DLZZL162J863:QVANSMNV4G- GNSDO5KZDP6UCI2RA9UQYH 6OYCN%MR*Y883E5%F6GWFSIUNT7.2D$QE-RUSERNT/21/0FL6O-1SI59BUR%48B40HAQW2\n",
+            "Undecoded Response 200  \n",
+            "\n",
+            "\n",
+            "Undecoded Response 200 eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IkFwTXhyY0lIMDdTVVZTTEZ4dk5qUHJ2ME85dEhQWjh6dFk3MDdBR1E2U3cifQ.eyJpc3MiOiJodHBzOi8vc2VydmljZXByb3ZpZGVyIiwiY2F0ZWdvcnkiOiJbU3RhbmRhcmRdIiwic3ViIjoiMjExYzJhOTMtODZjMC00ODlkLWFlN2MtMzliMWM0ZWQ2OTYwIiwicmVzdWx0IjoiT0siLCJyZXN1bHRzIjoiW10iLCJjb25maXJtYXRpb24iOiJleUpoYkdjaU9pSkZVekkxTmlJc0luUjVjQ0k2SWtwWFZDSXNJbXRwWkNJNklrRndUWGh5WTBsSU1EZFRWVlpUVEVaNGRrNXFVSEoyTUU4NWRFaFFXamg2ZEZrM01EZEJSMUUyVTNjaWZRLmV5SnFkR2tpT2lJd1pXSTRaVEkwWkMwd05HSmlMVFJoWXpNdE9XRTVZUzAzTldWaU56WTJaV0ZsWXpraUxDSnpkV0lpT2lJeU1URmpNbUU1TXkwNE5tTXdMVFE0T1dRdFlXVTNZeTB6T1dJeFl6UmxaRFk1TmpBaUxDSmpZWFJsWjI5eWVTSTZJbE4wWVc1a1lYSmtJaXdpY21WemRXeDBJam9pVDBzaUxDSndiMlFpT2lKQ1VsVWlMQ0p3YjJFaU9pSkJUVk1pTENKMllXeHBaRVp5YjIwaU9pSXlNREl5TFRBekxURXdWREUyT2pJNE9qRTFMall3TVZvaUxDSjJZV3hwWkZSdklqb2lNakF5TWkwd015MHhNRlF4TnpveU9Eb3hOUzQyTURGYUlpd2lhV0YwSWpveE5qUTJPRFEwT0RZNExDSmxlSEFpT2pFMk5EWTRORGcwTmpoOS5Hanp0UmNSWHloRXRaLW1qMmREZl9uTjdZeFNRR0dlTjdNNjJWM21tSTliVWlmVUdieXVLY1RCanlIQ3ZLeXpweXAzYllSRWhoVEJIYUFGcGRpMFNKdyIsImlhdCI6MTY0Njg0NDg2OCwiZXhwIjoxNjQ2ODQ4NDY4fQ.Bwf6x0u02IgqnP_No3LGqK_PRJdJ8BzOw2tYij6najOCZXLbC84ozXeZgFMnmKEx-Arbr1ZujuvuD5F09a9gEw \n",
+            "\n",
+            "\n",
+            "Validate result message: {\n",
+            "    \"iss\": \"htps://serviceprovider\",\n",
+            "    \"category\": \"[Standard]\",\n",
+            "    \"sub\": \"211c2a93-86c0-489d-ae7c-39b1c4ed6960\",\n",
+            "    \"result\": \"OK\",\n",
+            "    \"results\": \"[]\",\n",
+            "    \"confirmation\": \"eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IkFwTXhyY0lIMDdTVVZTTEZ4dk5qUHJ2ME85dEhQWjh6dFk3MDdBR1E2U3cifQ.eyJqdGkiOiIwZWI4ZTI0ZC0wNGJiLTRhYzMtOWE5YS03NWViNzY2ZWFlYzkiLCJzdWIiOiIyMTFjMmE5My04NmMwLTQ4OWQtYWU3Yy0zOWIxYzRlZDY5NjAiLCJjYXRlZ29yeSI6IlN0YW5kYXJkIiwicmVzdWx0IjoiT0siLCJwb2QiOiJCUlUiLCJwb2EiOiJBTVMiLCJ2YWxpZEZyb20iOiIyMDIyLTAzLTEwVDE2OjI4OjE1LjYwMVoiLCJ2YWxpZFRvIjoiMjAyMi0wMy0xMFQxNzoyODoxNS42MDFaIiwiaWF0IjoxNjQ2ODQ0ODY4LCJleHAiOjE2NDY4NDg0Njh9.GjztRcRXyhEtZ-mj2dDf_nN7YxSQGGeN7M62V3mmI9bUifUGbyuKcTBjyHCvKyzpyp3bYREhhTBHaAFpdi0SJw\",\n",
+            "    \"iat\": 1646844868,\n",
+            "    \"exp\": 1646848468\n",
+            "}\n"
+          ]
+        }
+      ],
+      "source": [
+        "hcert = input('Please paste your HCert: ').strip()  # Option 1: Enter the HC1:-String into the input field\n",
+        "#assert hcert.startswith('HC1:')\n",
+        "\n",
+        "from base64 import b64decode\n",
+        "from random import randint\n",
+        "from Crypto.Cipher import PKCS1_OAEP\n",
+        "from Crypto.PublicKey import RSA\n",
+        "from Crypto.Cipher import AES\n",
+        "from Crypto.Util.Padding import pad\n",
+        "from ecdsa.util import sigencode_der\n",
+        "\n",
+        "# Use real random numbers for production instead!\n",
+        "#password = bytearray([randint(0,255) for i in range(32)])\n",
+        "\n",
+        "#validation_identity = requests.get(validation_service_endpoint+'/identity').json()\n",
+        "\n",
+        "#for verificationMethod in validation_identity['verificationMethod']:\n",
+        "#    if verificationMethod['id'].endswith('ValidationServiceEncKey-1'):\n",
+        "#        validation_service_publickey =  verificationMethod['publicKeyJwk']\n",
+        "#        print(\"Selected Public Key:\", validation_service_publickey )\n",
+        "\n",
+        "#validatorkey = RSA.import_key(f'-----BEGIN CERTIFICATE-----\\n{validation_service_publickey[\"x5c\"]}\\n-----END CERTIFICATE-----')\n",
+        "#aesCipher = AES.new(password, AES.MODE_CBC,iv=b64decode(validation_nonce))\n",
+        "\n",
+        "#cipher = PKCS1_OAEP.new(validatorkey,hashAlgo=SHA256)\n",
+        "#cryptKey = cipher.encrypt(password)\n",
+        "#ciphertext= aesCipher.encrypt(pad(bytes(hcert,'utf-8'),AES.block_size))\n",
+        "#signature = userkey.sign(ciphertext,hashfunc=SHA256.new,sigencode=sigencode_der)\n",
+        "\n",
+        "#######   initialize  ###### \n",
+        "headers = {'content-type': 'application/json', \"Authorization\":\"Bearer \" + validator_token ,}\n",
+        "body = {\n",
+        "  \"pubKey\": \"aaabbb\",\n",
+        "  \"alg\": \"RSA\",\n",
+        "  \"Nonce\" : \"argle\"\n",
+        "}\n",
+        "txt=token_info['aud']\n",
+        "url = txt.rsplit(\"/validate\")[0]+\"/initialize\"\n",
+        "response = requests.post(url, data=json.dumps(body), headers=headers)\n",
+        "print (\"Initialize Response\", response.status_code, response.text, '\\n\\n')\n",
+        "\n",
+        "\n",
+        "####### validate   ######\n",
+        "headers = {'content-type': 'application/json', \"Authorization\":\"Bearer \" + validator_token }\n",
+        "\n",
+        "#body = {\"kid\":validation_service_publickey[\"kid\"],\n",
+        "#        \"dcc\":base64.b64encode(ciphertext).decode(),\n",
+        "#        \"sig\":base64.b64encode(signature).decode(),\n",
+        "#        \"encKey\":base64.b64encode(cryptKey).decode(),\n",
+        "#        \"encScheme\":\"RSAOAEPWithSHA256AESCBC\", \n",
+        "#        \"sigAlg\":\"SHA256withECDSA\"}\n",
+        "body= {\n",
+        "    \"hcert\": hcert\n",
+        "\n",
+        "}\n",
+        "\n",
+        "response = requests.post(token_info['aud'], data=json.dumps(body), headers=headers)\n",
+        "print (\"Validate Response\", response.status_code, response.text, '\\n\\n')\n",
+        "\n",
+        "\n",
+        "if response.ok:\n",
+        "  validate_result = jwt.decode(response.content, options={\"verify_signature\":False})  # weak knees, no sign check\n",
+        "  print(f'Validate result message: {json.dumps(validate_result, indent=4)}')"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "#completion, push confirmation\n",
+        "Wallet offers to push confirmation to airline, as final step. Under consent.\n",
+        "\n",
+        "On \"yes\", wallet identifies endpoint from airline identity document and POSTs the confirmation token under authentication with invitation token. In final message traeler is advised to go back to airline site"
+      ],
+      "metadata": {
+        "id": "9MVMUt-lOZFg"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "uTBr1ZoLAb2L",
+        "outputId": "cef284ca-4ea4-4d76-a61c-f0701ae41870",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Enter yes to push token to arline: \n",
+            "Undecoded Response 200  \n",
+            "\n",
+            "\n",
+            "Please navigate back to airline website\n"
+          ]
+        }
+      ],
+      "source": [
+        "ahum = input('Enter yes to push token to arline: ').strip()\n",
+        "  # App selects the ConfirmationService in Airline Identity document and posts the confirmation token.\n",
+        "for service in serviceIdentity['service']:\n",
+        "    if service['id'].endswith('#ConfirmationService-1'):\n",
+        "      response = requests.post( service['serviceEndpoint'],\n",
+        "                               headers={'Authorization': f'Bearer {qr_code_data[\"token\"]}', #initR-token goes here\n",
+        "                               'Content-Type':'application/json', 'X-Version' : '1.0'},\n",
+        "                               json = {\"confirmation\": validate_result[\"confirmation\"]})\n",
+        "print (\"Undecoded Response\", response.status_code, response.text, '\\n\\n')\n",
+        "        \n",
+        "print('Please navigate back to airline website')"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        ""
+      ],
+      "metadata": {
+        "id": "DaekPhaNpgLb"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ],
+  "metadata": {
+    "colab": {
+      "collapsed_sections": [],
+      "name": "Wallet App Simulator.ipynb",
+      "provenance": []
+    },
+    "kernelspec": {
+      "display_name": "Python 3 (ipykernel)",
+      "language": "python",
+      "name": "python3"
+    },
+    "language_info": {
+      "codemirror_mode": {
+        "name": "ipython",
+        "version": 3
+      },
+      "file_extension": ".py",
+      "mimetype": "text/x-python",
+      "name": "python",
+      "nbconvert_exporter": "python",
+      "pygments_lexer": "ipython3",
+      "version": "3.9.9"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 0
+}
