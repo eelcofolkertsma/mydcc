@@ -7,4 +7,4 @@ This repo contains a series of jupyter note books to implement DCC wallet functi
 - https://colab.research.google.com/github/eelcofolkertsma/mydcc/blob/main/pythonwallet-v2.ipynb is interesting way to launch 
 - https://colab.research.google.com/github/eelcofolkertsma/mydcc/blob/main/tryit.ipynb
 
-Second and third note books can be launched at https://pinggg.mywire.org
+
